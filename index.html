@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nerbucks Café — Coffee · Books · Good Days</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lato:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --brown:#3B1F0A; --brown-mid:#6B3A1F; --brown-light:#A0622A;
+  --beige:#F5ECD7; --beige-light:#FDF8F0; --beige-dark:#E8D9B8;
+  --green:#2D4A2D; --green-light:#3D6B3D;
+  --gold:#C9922A; --cream:#FAF3E8;
+  --white:#FFFFFF; --border:rgba(59,31,10,0.15);
+  --shadow:0 8px 32px rgba(59,31,10,0.18);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh;overflow-x:hidden;}
+
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.3;}
+
+/* NAVBAR */
+nav{
+  background:rgba(59,31,10,0.97);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:200;padding:0 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;box-shadow:0 2px 20px rgba(0,0,0,0.35);
+  border-bottom:1px solid rgba(201,146,42,0.25);
+}
+.nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.nav-logo-img{
+  width:44px;height:44px;border-radius:50%;overflow:hidden;
+  border:2px solid var(--gold);flex-shrink:0;background:var(--brown-mid);
+  box-shadow:0 0 14px rgba(201,146,42,0.4);transition:box-shadow 0.3s;
+}
+.nav-logo-img:hover{box-shadow:0 0 22px rgba(201,146,42,0.7);}
+.nav-logo-img img{width:100%;height:100%;object-fit:cover;}
+.nav-name{color:var(--beige);font-family:'Playfair Display',serif;font-size:17px;letter-spacing:0.5px;}
+.nav-name em{color:var(--gold);font-style:italic;}
+.nav-links{display:flex;gap:1.4rem;}
+.nav-links a{
+  color:rgba(245,236,215,0.7);font-size:12px;text-decoration:none;
+  cursor:pointer;transition:color 0.2s;letter-spacing:1px;text-transform:uppercase;
+  font-family:'Space Mono',monospace;position:relative;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;right:0;
+  height:1px;background:var(--gold);transform:scaleX(0);transition:transform 0.2s;
+}
+.nav-links a:hover{color:var(--beige);}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-visits{
+  color:rgba(245,236,215,0.55);font-size:11px;display:flex;align-items:center;gap:4px;
+  background:rgba(201,146,42,0.1);padding:4px 10px;border-radius:12px;
+  border:1px solid rgba(201,146,42,0.2);font-family:'Space Mono',monospace;
+}
+.nav-visits span{color:var(--gold);font-weight:700;}
+.nav-cta{
+  background:var(--gold);color:var(--brown);border:none;
+  padding:8px 18px;border-radius:24px;font-size:12px;font-weight:700;
+  cursor:pointer;font-family:'Space Mono',monospace;text-transform:uppercase;
+  letter-spacing:0.5px;transition:all 0.2s;box-shadow:0 0 12px rgba(201,146,42,0.3);
+}
+.nav-cta:hover{background:#daa832;box-shadow:0 0 20px rgba(201,146,42,0.5);}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:1;}
+.page.active{display:block;}
+
+/* HERO */
+.hero{
+  min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:4rem 2rem 3rem;position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(201,146,42,0.12) 0%,transparent 70%),
+    radial-gradient(ellipse at 0% 100%,rgba(45,74,45,0.15) 0%,transparent 50%),
+    linear-gradient(180deg,rgba(59,31,10,0.94) 0%,rgba(59,31,10,0.78) 100%);
+  z-index:0;
+}
+.hero>*{position:relative;z-index:1;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.4);
+  color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:2px;padding:5px 14px;border-radius:20px;margin-bottom:1.5rem;
+  text-transform:uppercase;animation:fadeInDown 0.6s ease both;
+}
+.hero-logo-wrap{
+  width:130px;height:130px;border-radius:50%;overflow:hidden;
+  border:3px solid var(--gold);margin:0 auto 1.8rem;
+  background:var(--brown-mid);
+  box-shadow:0 0 0 6px rgba(201,146,42,0.15),0 0 40px rgba(201,146,42,0.3);
+  animation:fadeInDown 0.7s ease 0.1s both;transition:transform 0.3s;
+}
+.hero-logo-wrap:hover{transform:scale(1.05);}
+.hero-logo-wrap img{width:100%;height:100%;object-fit:cover;}
+.hero-logo-wrap .fallback{font-size:52px;display:none;}
+.hero-tagline{
+  font-family:'Space Mono',monospace;font-size:11px;letter-spacing:4px;
+  color:var(--gold);text-transform:uppercase;margin-bottom:0.8rem;
+  animation:fadeInDown 0.7s ease 0.2s both;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;color:var(--gold);
+  font-size:clamp(32px,6vw,52px);font-weight:700;line-height:1.15;
+  margin-bottom:0.6rem;animation:fadeInDown 0.7s ease 0.3s both;
+}
+.hero h1 em{color:var(--gold);font-style:italic;}
+.hero p{
+  color:var(--gold);font-size:15px;margin-bottom:2.5rem;
+  font-weight:300;max-width:380px;animation:fadeInDown 0.7s ease 0.4s both;
+}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeInDown 0.7s ease 0.5s both;}
+.btn-gold{
+  background:var(--gold);color:var(--brown);border:none;
+  padding:13px 30px;border-radius:30px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:'Space Mono',monospace;text-transform:uppercase;
+  letter-spacing:0.5px;transition:all 0.2s;box-shadow:0 4px 20px rgba(201,146,42,0.4);
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,146,42,0.5);}
+.btn-outline-gold{
+  background:var(--gold);color:var(--brown);border:none;
+  padding:13px 30px;border-radius:30px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:'Space Mono',monospace;text-transform:uppercase;
+  letter-spacing:0.5px;transition:all 0.2s;box-shadow:0 4px 20px rgba(201,146,42,0.4);
+}
+.btn-outline-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,146,42,0.5);}
+.hero-scroll{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  color:rgba(245,236,215,0.3);font-size:11px;letter-spacing:2px;
+  font-family:'Space Mono',monospace;text-transform:uppercase;animation:bounce 2s infinite;
+}
+
+/* QUICK GRID */
+.quick-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;background:var(--brown);border-top:1px solid rgba(201,146,42,0.2);
+}
+.quick-card{
+  padding:20px 16px;text-align:center;
+  border-right:1px solid rgba(245,236,215,0.08);transition:background 0.2s;
+}
+.quick-card:last-child{border-right:none;}
+.quick-card:hover{background:rgba(201,146,42,0.08);}
+.quick-card .emoji{font-size:24px;margin-bottom:6px;}
+.quick-card .qlabel{font-size:10px;color:rgba(245,236,215,0.45);letter-spacing:1.5px;text-transform:uppercase;font-family:'Space Mono',monospace;margin-bottom:3px;}
+.quick-card .qval{font-size:13px;font-weight:700;color:var(--beige);}
+
+/* SECTIONS */
+.section-wrap{padding:2rem 1.5rem;}
+.section-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.section-title{font-family:'Playfair Display',serif;font-size:26px;color:var(--brown);margin-bottom:4px;}
+.section-title em{color:var(--gold);font-style:italic;}
+.section-sub{font-size:13px;color:var(--brown-mid);margin-bottom:1.5rem;font-weight:300;}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{
+  padding:7px 18px;border-radius:20px;font-size:12px;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--white);
+  color:var(--brown-mid);transition:all 0.2s;font-family:'Space Mono',monospace;
+}
+.tab.active{background:var(--brown);color:var(--beige);border-color:var(--brown);}
+.tab:hover:not(.active){border-color:var(--gold);color:var(--brown);}
+
+/* CATALOG */
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+
+.prod-card{
+  background:var(--white);border-radius:16px;border:1px solid var(--border);
+  overflow:hidden;transition:transform 0.25s,box-shadow 0.25s;position:relative;
+}
+.prod-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--brown-light));
+  transform:scaleX(0);transform-origin:left;transition:transform 0.3s;
+}
+.prod-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.prod-card:hover::before{transform:scaleX(1);}
+
+.prod-img-wrap{
+  height:120px;background:var(--beige-dark);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+.prod-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.prod-card:hover .prod-img-wrap img{transform:scale(1.06);}
+.prod-emoji-fallback{font-size:40px;}
+.prod-badge{
+  position:absolute;top:8px;right:8px;
+  background:var(--gold);color:var(--brown);
+  font-size:9px;font-family:'Space Mono',monospace;
+  padding:2px 8px;border-radius:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+
+.prod-body{padding:12px;}
+.prod-name{font-size:13px;font-weight:700;color:var(--brown);margin-bottom:2px;line-height:1.3;}
+.prod-desc{font-size:11px;color:var(--brown-mid);margin-bottom:10px;line-height:1.5;}
+.prod-footer{display:flex;align-items:center;justify-content:space-between;}
+.prod-price{font-size:14px;font-weight:700;color:var(--green);font-family:'Space Mono',monospace;}
+.add-btn{
+  width:30px;height:30px;border-radius:50%;background:var(--brown);color:var(--beige);
+  border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;box-shadow:0 2px 8px rgba(59,31,10,0.25);
+}
+.add-btn:hover{background:var(--gold);color:var(--brown);transform:rotate(90deg);}
+
+/* DELIVERY FORM */
+.form-interactive-wrap{
+  background:linear-gradient(135deg,var(--brown) 0%,#5a2e0e 100%);
+  border-radius:16px;padding:24px;margin-bottom:1.25rem;
+  border:1px solid rgba(201,146,42,0.2);
+}
+.form-interactive-wrap h2{font-family:'Playfair Display',serif;color:var(--beige);font-size:18px;text-align:center;margin-bottom:1rem;}
+.fi-select{
+  width:100%;padding:10px 14px;margin-bottom:12px;border-radius:8px;
+  border:1.5px solid rgba(201,146,42,0.3);font-size:15px;
+  background:rgba(255,255,255,0.08);color:var(--beige);
+  font-family:'Lato',sans-serif;cursor:pointer;outline:none;
+}
+.fi-select option{background:var(--brown);}
+.fi-btns{display:flex;gap:10px;}
+.fi-btn{
+  flex:1;padding:11px;border:none;border-radius:8px;font-size:14px;
+  cursor:pointer;font-family:'Space Mono',monospace;font-weight:700;
+  color:white;transition:opacity 0.2s;text-transform:uppercase;letter-spacing:0.5px;
+}
+.fi-btn:hover{opacity:0.85;}
+.fi-guardar{background:#28a745;}
+.fi-eliminar{background:#dc3545;}
+.fi-resultado{margin-top:12px;font-size:14px;color:var(--beige);font-weight:700;text-align:center;min-height:22px;}
+
+.form-group{margin-bottom:12px;}
+.form-group label{
+  display:block;font-size:10px;color:var(--brown-mid);margin-bottom:5px;
+  font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Space Mono',monospace;
+}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);
+  font-size:14px;background:var(--white);color:var(--brown);
+  font-family:'Lato',sans-serif;outline:none;transition:border-color 0.2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,146,42,0.1);
+}
+.form-group textarea{min-height:80px;resize:vertical;}
+
+.btn-submit{
+  width:100%;padding:14px;border-radius:12px;background:var(--brown);color:var(--beige);
+  border:none;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;
+  transition:all 0.2s;margin-top:8px;
+}
+.btn-submit:hover{transform:translateY(-1px);}
+.btn-green{background:var(--green)!important;box-shadow:0 4px 16px rgba(45,74,45,0.3);}
+.btn-green:hover{background:var(--green-light)!important;}
+.btn-outline{background:transparent!important;color:var(--brown)!important;border:1.5px solid var(--border)!important;box-shadow:none!important;}
+
+/* CONTACTO */
+.contact-hero{
+  background:linear-gradient(135deg,var(--brown) 0%,#5a2e0e 60%,var(--green) 100%);
+  padding:3rem 2rem;text-align:center;position:relative;overflow:hidden;
+}
+.contact-hero::before{
+  content:'NERBUCKS';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Playfair Display',serif;font-size:80px;font-weight:700;
+  color:rgba(255,255,255,0.03);white-space:nowrap;pointer-events:none;letter-spacing:10px;
+}
+.contact-hero h1{font-family:'Playfair Display',serif;color:var(--beige);font-size:28px;margin-bottom:0.4rem;position:relative;}
+.contact-hero p{color:rgba(245,236,215,0.65);font-size:14px;position:relative;}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:1.5rem;}
+.contact-card{
+  background:var(--white);border-radius:16px;border:1px solid var(--border);
+  padding:18px;text-align:center;cursor:pointer;text-decoration:none;
+  transition:all 0.25s;display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.contact-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.contact-card .c-icon{font-size:28px;}
+.contact-card .c-label{font-size:10px;color:var(--brown-mid);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Space Mono',monospace;}
+.contact-card .c-val{font-size:12px;color:var(--brown);}
+.contact-card.whatsapp{border-color:rgba(37,211,102,0.3);}
+.contact-card.whatsapp:hover{border-color:#25D366;background:rgba(37,211,102,0.04);}
+.contact-card.instagram{border-color:rgba(225,48,108,0.3);}
+.contact-card.instagram:hover{border-color:#E1306C;background:rgba(225,48,108,0.04);}
+.contact-card.facebook{border-color:rgba(24,119,242,0.3);}
+.contact-card.facebook:hover{border-color:#1877F2;background:rgba(24,119,242,0.04);}
+.contact-card.email{border-color:rgba(201,146,42,0.3);}
+.contact-card.email:hover{border-color:var(--gold);background:rgba(201,146,42,0.04);}
+.contact-msg-wrap{padding:0 1.5rem 1.5rem;}
+.contact-form-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:18px;}
+
+/* ABOUT */
+.about-banner{background:linear-gradient(135deg,var(--brown),#5a2e0e);padding:2.5rem 2rem;text-align:center;}
+.about-banner h1{font-family:'Playfair Display',serif;color:var(--beige);font-size:26px;margin-bottom:0.4rem;}
+.about-banner p{color:rgba(245,236,215,0.65);font-size:13px;font-family:'Space Mono',monospace;letter-spacing:2px;text-transform:uppercase;}
+.about-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:20px;line-height:1.9;font-size:14px;}
+.about-card p{margin-bottom:12px;}
+.about-card p:last-child{margin-bottom:0;font-size:13px;color:var(--brown-mid);}
+.about-divider{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px 0;}
+
+/* CART BAR */
+.cart-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:linear-gradient(90deg,var(--green),var(--green-light));
+  color:var(--beige);padding:14px 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 -4px 24px rgba(0,0,0,0.25);border-top:1px solid rgba(201,146,42,0.3);
+}
+.cart-bar.show{transform:translateY(0);}
+.cart-info{font-size:14px;}
+.cart-info strong{font-weight:700;color:var(--gold);}
+.cart-cta{
+  background:var(--gold);color:var(--brown);border:none;padding:9px 22px;border-radius:22px;
+  font-size:12px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;text-transform:uppercase;transition:all 0.2s;
+}
+.cart-cta:hover{background:#daa832;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--cream);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:1.5rem;max-height:80vh;overflow-y:auto;border-top:2px solid var(--gold);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--brown-mid);}
+.cart-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.cart-item-name{font-size:14px;font-weight:700;}
+.cart-item-qty{font-size:12px;color:var(--brown-mid);}
+.cart-item-price{font-size:14px;font-weight:700;color:var(--green);font-family:'Space Mono',monospace;}
+.cart-total-row{display:flex;justify-content:space-between;padding:14px 0 0;font-size:16px;font-weight:700;font-family:'Space Mono',monospace;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--brown);color:var(--gold);padding:9px 22px;border-radius:24px;
+  font-size:13px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:400;
+  white-space:nowrap;border:1px solid rgba(201,146,42,0.3);font-family:'Space Mono',monospace;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* IMG TIP */
+.img-tip{font-size:11px;color:var(--brown-mid);background:var(--beige-dark);border-radius:10px;padding:10px 14px;margin-bottom:1rem;line-height:1.8;border-left:3px solid var(--gold);}
+.img-tip strong{color:var(--brown);}
+.img-tip code{background:rgba(59,31,10,0.08);padding:1px 5px;border-radius:3px;font-size:10px;}
+
+/* ANIMATIONS */
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .nav-links{display:none;}
+  .nav-visits{display:none;}
+  .quick-grid{grid-template-columns:1fr 1fr;}
+  .quick-card:nth-child(2){border-right:none;}
+  .quick-card:nth-child(3){border-top:1px solid rgba(245,236,215,0.08);}
+  .catalog-grid{grid-template-columns:repeat(2,1fr);}
+  .contact-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-brand" onclick="showPage('home')">
+    <div class="nav-logo-img">
+      <img src="logo.png" alt="Nerbucks Café" onerror="this.style.display='none';">
+    </div>
+    <span class="nav-name">Nerbucks <em>Café</em></span>
+  </div>
+  <div class="nav-links">
+    <a onclick="showPage('catalogo')">Menú</a>
+    <a onclick="showPage('delivery')">Domicilio</a>
+    <a onclick="showPage('about')">Nosotros</a>
+    <a onclick="showPage('contacto')">Contacto</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-visits">👁 <span id="nav-visit-count">0</span></div>
+    <button class="nav-cta" onclick="showPage('catalogo')">Ordenar</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-badge">✦ Coffee · Books · Good Days ✦</div>
+    <div class="hero-logo-wrap">
+      <img src="logo.png" alt="Nerbucks Café" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <span class="fallback">☕</span>
+    </div>
+    <div class="hero-tagline">Café de especialidad para mentes creativas</div>
+    <h1>Nerbucks <em>Café</em></h1>
+    <p>Tu rincón favorito para leer, disfrutar y pedir a domicilio en San Salvador, El Salvador</p>
+    <div class="hero-btns">
+      <button class="btn-gold" onclick="showPage('catalogo')">Ver el menú</button>
+      <button class="btn-outline-gold" onclick="showPage('delivery')">Pedir a domicilio</button>
+      <button class="btn-outline-gold" onclick="showPage('contacto')">Contáctanos</button>
+    </div>
+    <div class="hero-scroll">↓ scroll</div>
+  </div>
+  <div class="quick-grid">
+    <div class="quick-card"><div class="emoji">☕</div><div class="qlabel">Bebidas</div><div class="qval">30+ opciones</div></div>
+    <div class="quick-card"><div class="emoji">📚</div><div class="qlabel">Colección</div><div class="qval">+500 libros</div></div>
+    <div class="quick-card"><div class="emoji">🛵</div><div class="qlabel">Domicilio</div><div class="qval">30–45 min</div></div>
+    <div class="quick-card"><div class="emoji">🕘</div><div class="qlabel">Horario</div><div class="qval">8am – 9pm</div></div>
+  </div>
+</div>
+
+<!-- CATÁLOGO -->
+<div id="page-catalogo" class="page">
+  <div class="section-wrap">
+    <div class="section-eyebrow">✦ Explora</div>
+    <div class="section-title">Nuestro <em>menú</em></div>
+    <div class="section-sub">Todos los productos de Nerbucks Café</div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="filterCat('todo',this)">Todo</button>
+      <button class="tab" onclick="filterCat('clasico',this)">☕ Clásicos</button>
+      <button class="tab" onclick="filterCat('autor',this)">✨ De autor</button>
+      <button class="tab" onclick="filterCat('te',this)">🍵 Tés</button>
+      <button class="tab" onclick="filterCat('fria',this)">🧊 Frías</button>
+      <button class="tab" onclick="filterCat('postre',this)">🍰 Postres</button>
+      <button class="tab" onclick="filterCat('combo',this)">🎁 Combos</button>
+      <button class="tab" onclick="filterCat('libro',this)">📚 Libros</button>
+    </div>
+    <div class="catalog-grid" id="catalog-grid"></div>
+  </div>
+</div>
+
+<!-- DELIVERY -->
+<div id="page-delivery" class="page">
+  <div class="section-wrap">
+    <div class="section-eyebrow">✦ A tu puerta</div>
+    <div class="section-title">Pedir a <em>domicilio</em></div>
+    <div class="section-sub">Completa tus datos y te llevamos el pedido</div>
+    <div class="form-interactive-wrap">
+      <h2>¿Qué deseas ordenar?</h2>
+      <select class="fi-select" id="fi-opciones">
+        <option value="">Seleccione una categoría</option>
+        <option value="Cafés clásicos ☕">Cafés clásicos ☕</option>
+        <option value="Bebidas de autor ✨">Bebidas de autor ✨</option>
+        <option value="Tés & infusiones 🍵">Tés & infusiones 🍵</option>
+        <option value="Bebidas frías 🧊">Bebidas frías 🧊</option>
+        <option value="Postres 🍰">Postres 🍰</option>
+        <option value="Combo especial 🎁">Combo especial 🎁</option>
+        <option value="Libros 📚">Libros 📚</option>
+      </select>
+      <div class="fi-btns">
+        <button class="fi-btn fi-guardar" onclick="fiGuardar()">Guardar</button>
+        <button class="fi-btn fi-eliminar" onclick="fiLimpiar()">Limpiar</button>
+      </div>
+      <div class="fi-resultado" id="fi-resultado"></div>
+    </div>
+    <div class="form-group"><label>Nombre completo</label><input type="text" id="d-nombre" placeholder="Tu nombre"></div>
+    <div class="form-group"><label>Dirección de entrega</label><input type="text" id="d-direccion" placeholder="Calle, número, colonia"></div>
+    <div class="form-group"><label>Teléfono</label><input type="tel" id="d-telefono" placeholder="+503 0000 0000"></div>
+    <div class="form-group">
+      <label>Zona / Municipio</label>
+      <select id="d-zona">
+        <option value="">Seleccione su zona</option>
+        <option>San Salvador Centro</option>
+        <option>Soyapango</option>
+        <option>Santa Tecla</option>
+        <option>Mejicanos</option>
+        <option>San Marcos</option>
+        <option>Otra zona</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Notas especiales (opcional)</label><textarea id="d-notas" placeholder="Sin azúcar, sin lactosa..."></textarea></div>
+    <button class="btn-submit btn-green" onclick="enviarPedido()">📲 Confirmar pedido por WhatsApp</button>
+    <button class="btn-submit btn-outline" onclick="showPage('catalogo')">← Volver al menú</button>
+  </div>
+</div>
+
+<!-- CONTACTO -->
+<div id="page-contacto" class="page">
+  <div class="contact-hero">
+    <h1>Contáctanos</h1>
+    <p>Estamos aquí para ayudarte — escríbenos cuando quieras</p>
+  </div>
+  <div class="contact-grid">
+    <a class="contact-card whatsapp" href="https://wa.me/50368230569" target="_blank">
+      <div class="c-icon">💬</div><div class="c-label">WhatsApp</div><div class="c-val">Escríbenos directo</div>
+    </a>
+    <a class="contact-card instagram" href="https://instagram.com/ner.bucks" target="_blank">
+      <div class="c-icon">📸</div><div class="c-label">Instagram</div><div class="c-val">@nerbuckscafe</div>
+    </a>
+    <a class="contact-card facebook" href="https://facebook.com/nerbuckscafe" target="_blank">
+      <div class="c-icon">👍</div><div class="c-label">Facebook</div><div class="c-val">Nerbucks Café</div>
+    </a>
+    <a class="contact-card email" href="mailto:nerbucks.cafe@gmail.com">
+      <div class="c-icon">✉️</div><div class="c-label">Email</div><div class="c-val">nerbucks.cafe@gmail.com</div>
+    </a>
+  </div>
+  <div class="contact-msg-wrap">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);margin-bottom:.75rem;">Envíanos un mensaje</div>
+    <div class="contact-form-card">
+      <div class="form-group"><label>Tu nombre</label><input type="text" id="c-nombre" placeholder="¿Cómo te llamás?"></div>
+      <div class="form-group"><label>Tu correo o WhatsApp</label><input type="text" id="c-contacto" placeholder="correo@ejemplo.com o +503..."></div>
+      <div class="form-group">
+        <label>Asunto</label>
+        <select id="c-asunto">
+          <option value="">Selecciona un tema</option>
+          <option>Consulta sobre el menú</option>
+          <option>Pedido especial / reserva</option>
+          <option>Información sobre libros</option>
+          <option>Problema con un pedido</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Mensaje</label><textarea id="c-mensaje" placeholder="Escríbenos aquí..."></textarea></div>
+      <button class="btn-submit btn-green" onclick="enviarContacto()">📲 Enviar por WhatsApp</button>
+    </div>
+    <div style="margin-top:1.25rem;background:var(--white);border-radius:14px;border:1px solid var(--border);padding:16px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;font-family:'Playfair Display',serif;">📍 Encuéntranos</div>
+      <div style="font-size:13px;color:var(--brown-mid);line-height:1.8;">San Salvador, El Salvador<br>🕘 Lunes a domingo: 8:00am – 9:00pm<br>🛵 Domicilio disponible en toda la ciudad</div>
+    </div>
+  </div>
+</div>
+
+<!-- NOSOTROS -->
+<div id="page-about" class="page">
+  <div class="about-banner">
+    <h1>Sobre Nerbucks Café</h1>
+    <p>Coffee · Books · Good Days</p>
+  </div>
+  <div class="section-wrap">
+    <div class="about-card">
+      <p>Somos una cafetería-biblioteca fundada con la misión de crear un espacio donde la gente pueda disfrutar de un buen café, explorar nuevos libros y sentirse en casa.</p>
+      <div class="about-divider"></div>
+      <p>Ofrecemos café de especialidad, bebidas de autor, postres artesanales y una selección cuidada de libros — todo disponible para disfrutar en el local o pedir a domicilio.</p>
+      <div class="about-divider"></div>
+      <p>📍 San Salvador, El Salvador · 🕘 Lun–Dom, 8am–9pm · 📱 WhatsApp disponible</p>
+    </div>
+  </div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-info"><strong id="cart-count">0 productos</strong> — <span id="cart-total">$0.00</span></div>
+  <button class="cart-cta" onclick="openCart()">Ver pedido 🛒</button>
+</div>
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cart-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Tu pedido</span>
+      <button class="modal-close" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cart-items-list"></div>
+    <div class="cart-total-row"><span>Total</span><span id="cart-total-modal">$0.00</span></div>
+    <button class="btn-submit btn-green" style="margin-top:16px;" onclick="closeCart();showPage('delivery');">Continuar al pedido</button>
+    <button class="btn-submit btn-outline" onclick="clearCart()">Vaciar carrito</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ PRODUCTOS — Menú real de Nerbucks Café ══ */
+const productos = [
+  // CAFÉS CLÁSICOS
+  {id:1, cat:'clasico', name:'Espresso',             desc:'Shot intenso y cremoso',                price:1.25, emoji:'☕', img:'img/espresso.jpg',          badge:''},
+  {id:2, cat:'clasico', name:'Americano',            desc:'Espresso suavizado con agua caliente',  price:1.50, emoji:'☕', img:'img/americano.jpg',          badge:''},
+  {id:3, cat:'clasico', name:'Cortado',              desc:'Espresso con un toque de leche',        price:1.45, emoji:'☕', img:'img/cortado.jpg',            badge:''},
+  {id:4, cat:'clasico', name:'Cappuccino',           desc:'Café con espuma cremosa de leche',      price:1.75, emoji:'☕', img:'img/cappuccino.jpg',         badge:''},
+  {id:5, cat:'clasico', name:'Latte',                desc:'Suave y cremoso con leche al vapor',    price:1.75, emoji:'🥛', img:'img/latte.jpg',              badge:''},
+  {id:6, cat:'clasico', name:'Latte Vainilla',       desc:'Latte clásico con sirope de vainilla',  price:1.95, emoji:'🥛', img:'img/latte-vainilla.jpg',     badge:''},
+  {id:7, cat:'clasico', name:'Mocha',                desc:'Chocolate y café en armonía perfecta',  price:2.00, emoji:'🍫', img:'img/mocha.jpg',              badge:''},
+  {id:8, cat:'clasico', name:'Caramelo Macchiato',   desc:'Espresso con leche y caramelo',         price:2.00, emoji:'☕', img:'img/caramelo-macchiato.jpg', badge:''},
+  {id:9, cat:'clasico', name:'Café Filtrado',        desc:'Método de goteo, suave y aromático',    price:1.50, emoji:'☕', img:'img/cafe-filtrado.jpg',      badge:''},
+  // BEBIDAS DE AUTOR
+  {id:10,cat:'autor',   name:'Velvet Chapter',       desc:'Latte de vainilla y crema fría',        price:2.25, emoji:'📖', img:'img/velvet-chapter.jpg',    badge:'autor'},
+  {id:11,cat:'autor',   name:'Beige Mood',           desc:'Cold brew con espuma de caramelo',      price:2.25, emoji:'🤎', img:'img/beige-mood.jpg',        badge:'autor'},
+  {id:12,cat:'autor',   name:'Soft Morning',         desc:'Latte de miel y canela',                price:2.25, emoji:'🌅', img:'img/soft-morning.jpg',      badge:'autor'},
+  {id:13,cat:'autor',   name:'Rhode Mocha',          desc:'Chocolate belga + espresso doble',      price:2.25, emoji:'🍫', img:'img/rhode-mocha.jpg',       badge:'autor'},
+  {id:14,cat:'autor',   name:'Cloud Coffee',         desc:'Café frío con crema dulce ligera',      price:2.25, emoji:'☁️', img:'img/cloud-coffee.jpg',      badge:'autor'},
+  {id:15,cat:'autor',   name:'Matcha Soft',          desc:'Matcha latte con leche de avena',       price:2.50, emoji:'🍵', img:'img/matcha-soft.jpg',       badge:'autor'},
+  {id:16,cat:'autor',   name:'Chai Pages',           desc:'Chai latte con toque de vainilla',      price:2.25, emoji:'📚', img:'img/chai-pages.jpg',        badge:'autor'},
+  // TÉS
+  {id:17,cat:'te',      name:'Té Matcha',            desc:'Matcha japonés premium con leche',      price:1.75, emoji:'🍵', img:'img/te-matcha.jpg',         badge:''},
+  {id:18,cat:'te',      name:'Té Chai Latte',        desc:'Especias cálidas con leche espumada',   price:1.75, emoji:'🍵', img:'img/te-chai.jpg',           badge:''},
+  {id:19,cat:'te',      name:'Té Negro Earl Grey',   desc:'Clásico bergamota suave y elegante',    price:1.50, emoji:'🫖', img:'img/te-earl-grey.jpg',      badge:''},
+  {id:20,cat:'te',      name:'Té Frutos Rojos',      desc:'Mezcla frutal aromática',               price:1.50, emoji:'🍓', img:'img/te-frutos-rojos.jpg',   badge:''},
+  {id:21,cat:'te',      name:'Té Verde Jazmín',      desc:'Delicado y floral, muy relajante',      price:1.50, emoji:'🌸', img:'img/te-jazmin.jpg',         badge:''},
+  {id:22,cat:'te',      name:'Infusión de Lavanda',  desc:'Floral y relajante para la tarde',      price:1.50, emoji:'💜', img:'img/infusion-lavanda.jpg',  badge:''},
+  // BEBIDAS FRÍAS
+  {id:23,cat:'fria',    name:'Cold Brew',            desc:'Infusión fría 12h, suave y refrescante',price:1.75, emoji:'🧊', img:'img/cold-brew.jpg',         badge:''},
+  {id:24,cat:'fria',    name:'Frappé Oreo',          desc:'Cremoso con galleta Oreo y chantilly',  price:2.25, emoji:'🥤', img:'img/frappe-oreo.jpg',       badge:'nuevo'},
+  {id:25,cat:'fria',    name:'Frappé Caramelo',      desc:'Frappé suave con caramelo y nata',      price:2.25, emoji:'🥤', img:'img/frappe-caramelo.jpg',   badge:''},
+  {id:26,cat:'fria',    name:'Limonada Rosa',        desc:'Refrescante con frambuesa y menta',     price:1.75, emoji:'🍋', img:'img/limonada-rosa.jpg',     badge:''},
+  {id:27,cat:'fria',    name:'Smoothie de Mango',    desc:'100% natural, tropical y cremoso',      price:2.00, emoji:'🥭', img:'img/smoothie-mango.jpg',    badge:''},
+  {id:28,cat:'fria',    name:'Chocolate Helado',     desc:'Chocolate belga frío con leche',        price:2.00, emoji:'🍫', img:'img/chocolate-helado.jpg',  badge:''},
+  // POSTRES
+  {id:29,cat:'postre',  name:'Cheesecake Vainilla',  desc:'Clásico cremoso con base de galleta',   price:2.25, emoji:'🍰', img:'img/cheesecake-vainilla.jpg',badge:''},
+  {id:30,cat:'postre',  name:'Cheesecake Frutos del Bosque',desc:'Mermelada de frutos rojos',      price:2.50, emoji:'🍓', img:'img/cheesecake-bosque.jpg', badge:'fav'},
+  {id:31,cat:'postre',  name:'Cheesecake Lotus Biscoff',desc:'Base y cobertura Lotus crujiente',   price:2.50, emoji:'🍪', img:'img/cheesecake-lotus.jpg',  badge:'fav'},
+  {id:32,cat:'postre',  name:'Brownie Fudge',        desc:'Húmedo e intenso con chocolate belga',  price:1.75, emoji:'🍫', img:'img/brownie-fudge.jpg',     badge:''},
+  {id:33,cat:'postre',  name:'Tiramisú Clásico',     desc:'Italiano auténtico con mascarpone',     price:2.25, emoji:'🍮', img:'img/tiramisu.jpg',          badge:''},
+  {id:34,cat:'postre',  name:'Red Velvet',           desc:'Terciopelo rojo con frosting de queso', price:2.25, emoji:'❤️', img:'img/red-velvet.jpg',        badge:''},
+  {id:35,cat:'postre',  name:'Galleta Soft Cookie',  desc:'Grande, suave y recién horneada',       price:1.25, emoji:'🍪', img:'img/galleta-soft.jpg',      badge:'nuevo'},
+  // COMBOS
+  {id:36,cat:'combo',   name:'Tarde de Estudio',     desc:'Cold Brew + Muffin + Cookie',           price:4.50, emoji:'📖', img:'img/combo-estudio.jpg',     badge:'combo'},
+  {id:37,cat:'combo',   name:'Tarde de Trabajo',     desc:'Latte + Sándwich + Té Frío',            price:5.25, emoji:'💼', img:'img/combo-trabajo.jpg',     badge:'combo'},
+  {id:38,cat:'combo',   name:'Tarde de Relax',       desc:'Cappuccino + Cheesecake + Brownie',     price:5.50, emoji:'🌿', img:'img/combo-relax.jpg',       badge:'combo'},
+  // LIBROS
+  {id:39,cat:'libro',   name:'Cien años de soledad', desc:'García Márquez — Realismo mágico',      price:8.50, emoji:'📖', img:'img/cien-anios.jpg',        badge:''},
+  {id:40,cat:'libro',   name:'El alquimista',        desc:'Paulo Coelho — Filosofía y aventura',   price:7.00, emoji:'📗', img:'img/alquimista.jpg',        badge:''},
+  {id:41,cat:'libro',   name:'Sapiens',              desc:'Yuval Harari — Historia humana',        price:10.00,emoji:'📘', img:'img/sapiens.jpg',           badge:''},
+  {id:42,cat:'libro',   name:'La sombra del viento', desc:'Carlos Ruiz Zafón — Misterio',          price:9.00, emoji:'📕', img:'img/sombra-viento.jpg',     badge:''},
+];
+
+let cart = {}, currentFilter = 'todo';
+
+/* ══ FONDO ANIMADO ══ */
+(function(){
+  const c = document.getElementById('bg-canvas');
+  const ctx = c.getContext('2d');
+  let W, H, pts = [];
+  const COLS = ['#C9922A','#6B3A1F','#3B1F0A','#2D4A2D','#A0622A'];
+  function resize(){ W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+  function Pt(){
+    this.x = Math.random()*W; this.y = Math.random()*H+H;
+    this.r = Math.random()*12+3; this.vy = Math.random()*0.55+0.18;
+    this.vx = (Math.random()-.5)*0.35;
+    this.col = COLS[Math.floor(Math.random()*COLS.length)];
+    this.a = Math.random()*0.45+0.08;
+    this.ring = Math.random()>0.5;
+    this.rot = Math.random()*Math.PI*2; this.rv = (Math.random()-.5)*0.012;
+  }
+  function init(){ pts=[]; for(let i=0;i<60;i++){const p=new Pt();p.y=Math.random()*H;pts.push(p);} }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.y-=p.vy; p.x+=p.vx; p.rot+=p.rv;
+      ctx.save(); ctx.globalAlpha=p.a; ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.beginPath(); ctx.arc(0,0,p.r,0,Math.PI*2);
+      if(p.ring){ctx.strokeStyle=p.col;ctx.lineWidth=1.5;ctx.stroke();}
+      else{ctx.fillStyle=p.col;ctx.fill();}
+      ctx.restore();
+      if(p.y+p.r<0){p.x=Math.random()*W;p.y=H+p.r;p.vy=Math.random()*0.55+0.18;p.vx=(Math.random()-.5)*0.35;}
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); init(); draw();
+  window.addEventListener('resize',()=>{resize();init();});
+})();
+
+/* ══ NAVEGACIÓN ══ */
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  if(n==='catalogo') renderCatalog(currentFilter);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══ CATÁLOGO ══ */
+const badgeLabel = {autor:'autor',fav:'⭐ fav',nuevo:'nuevo',combo:'combo'};
+function renderCatalog(f){
+  const g = document.getElementById('catalog-grid');
+  const list = f==='todo'?productos:productos.filter(p=>p.cat===f);
+  g.innerHTML = list.map(p=>`
+    <div class="prod-card">
+      <div class="prod-img-wrap">
+        <img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <span class="prod-emoji-fallback" style="display:none;">${p.emoji}</span>
+        ${p.badge?`<div class="prod-badge">${badgeLabel[p.badge]||p.badge}</div>`:''}
+      </div>
+      <div class="prod-body">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.desc}</div>
+        <div class="prod-footer">
+          <span class="prod-price">$${p.price.toFixed(2)}</span>
+          <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function filterCat(c,b){
+  currentFilter=c;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  b.classList.add('active'); renderCatalog(c);
+}
+
+/* ══ CARRITO ══ */
+function addToCart(id){
+  cart[id]=(cart[id]||0)+1; updateCartBar();
+  const p=productos.find(x=>x.id===id);
+  showToast(p.emoji+' '+p.name+' agregado');
+}
+function calcTotal(){
+  return Object.entries(cart).reduce((s,[id,q])=>{
+    const p=productos.find(x=>x.id==id); return s+p.price*q;
+  },0);
+}
+function updateCartBar(){
+  const n=Object.values(cart).reduce((a,b)=>a+b,0);
+  document.getElementById('cart-count').textContent=n+(n===1?' producto':' productos');
+  const t='$'+calcTotal().toFixed(2);
+  document.getElementById('cart-total').textContent=t;
+  document.getElementById('cart-total-modal').textContent=t;
+  const bar=document.getElementById('cart-bar');
+  n>0?bar.classList.add('show'):bar.classList.remove('show');
+}
+function openCart(){
+  const el=document.getElementById('cart-items-list');
+  const en=Object.entries(cart).filter(([,q])=>q>0);
+  el.innerHTML=!en.length
+    ?'<p style="color:var(--brown-mid);font-size:14px;padding:1rem 0;">Tu carrito está vacío.</p>'
+    :en.map(([id,q])=>{
+      const p=productos.find(x=>x.id==id);
+      return `<div class="cart-item"><div><div class="cart-item-name">${p.emoji} ${p.name}</div><div class="cart-item-qty">x${q}</div></div><div class="cart-item-price">$${(p.price*q).toFixed(2)}</div></div>`;
+    }).join('');
+  document.getElementById('cart-total-modal').textContent='$'+calcTotal().toFixed(2);
+  document.getElementById('cart-modal').classList.add('show');
+}
+function closeCart(){document.getElementById('cart-modal').classList.remove('show');}
+function clearCart(){cart={};updateCartBar();closeCart();showToast('Carrito vaciado');}
+
+/* ══ FORMULARIO INTERACTIVO ══ */
+function fiGuardar(){
+  const v=document.getElementById('fi-opciones').value;
+  document.getElementById('fi-resultado').textContent=v?'✓ Seleccionaste: '+v:'Por favor seleccione una opción.';
+}
+function fiLimpiar(){
+  document.getElementById('fi-opciones').value='';
+  document.getElementById('fi-resultado').textContent='';
+}
+
+/* ══ ENVIAR PEDIDO ══ */
+function enviarPedido(){
+  const nombre=document.getElementById('d-nombre').value.trim();
+  const dir=document.getElementById('d-direccion').value.trim();
+  const tel=document.getElementById('d-telefono').value.trim();
+  const zona=document.getElementById('d-zona').value;
+  const notas=document.getElementById('d-notas').value.trim();
+  if(!nombre||!dir||!tel){alert('Por favor completa nombre, dirección y teléfono.');return;}
+  const en=Object.entries(cart).filter(([,q])=>q>0);
+  if(!en.length){alert('Tu carrito está vacío.');showPage('catalogo');return;}
+  let msg='🛒 *Pedido Nerbucks Café*\n\n*Productos:*\n';
+  en.forEach(([id,q])=>{const p=productos.find(x=>x.id==id);msg+=`• ${p.name} x${q} — $${(p.price*q).toFixed(2)}\n`;});
+  msg+=`\n*Total: $${calcTotal().toFixed(2)}*\n\n*Cliente:* ${nombre}\n*Dirección:* ${dir}\n*Zona:* ${zona||'No especificada'}\n*Teléfono:* ${tel}\n`;
+  if(notas)msg+=`*Notas:* ${notas}\n`;
+  // ⚠️ Cambia 50300000000 por tu número real de WhatsApp (sin el +)
+  window.open('https://wa.me/50300000000?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ══ ENVIAR CONTACTO ══ */
+function enviarContacto(){
+  const nombre=document.getElementById('c-nombre').value.trim();
+  const contacto=document.getElementById('c-contacto').value.trim();
+  const asunto=document.getElementById('c-asunto').value;
+  const mensaje=document.getElementById('c-mensaje').value.trim();
+  if(!nombre||!mensaje){alert('Por favor completa tu nombre y el mensaje.');return;}
+  let msg=`💬 *Mensaje para Nerbucks Café*\n\n*Nombre:* ${nombre}\n`;
+  if(contacto)msg+=`*Contacto:* ${contacto}\n`;
+  if(asunto)msg+=`*Asunto:* ${asunto}\n`;
+  msg+=`\n*Mensaje:*\n${mensaje}`;
+  window.open('https://wa.me/50300000000?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ══ TOAST ══ */
+function showToast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ══ CONTADOR ══ */
+function initVisitCounter(){
+  let v=parseInt(localStorage.getItem('nerbucks_visits')||'0')+1;
+  localStorage.setItem('nerbucks_visits',v);
+  document.getElementById('nav-visit-count').textContent=v.toLocaleString();
+}
+
+initVisitCounter();
+renderCatalog('todo');
+</script>
+</body>
+</html>
